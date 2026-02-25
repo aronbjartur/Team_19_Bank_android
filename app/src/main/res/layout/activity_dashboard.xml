@@ -6,15 +6,36 @@
     android:gravity="center"
     android:padding="20dp">
 
-    <TextView android:id="@+id/textWelcome"
+    <TextView
+        android:id="@+id/textWelcome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="24sp"
         android:text="Welcome!" />
 
-    <Button android:id="@+id/btnLogout"
+    <!-- US3: Account Number -->
+    <TextView
+        android:id="@+id/textAccountNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Account: —"
+        android:textSize="16sp"
+        android:layout_marginTop="20dp" />
+
+    <!-- US3: Dót -->
+    <TextView
+        android:id="@+id/textBalance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Balance: —"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp" />
+
+    <Button
+        android:id="@+id/btnLogout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Log Out"
-        android:layout_marginTop="20dp"/>
+        android:layout_marginTop="30dp"/>
 </LinearLayout>
