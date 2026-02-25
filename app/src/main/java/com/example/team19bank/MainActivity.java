@@ -13,17 +13,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // US2: TODO
+
         // Takið eftir "BankAppPrefs"
         SharedPreferences sharedPref = getSharedPreferences("BankAppPrefs", Context.MODE_PRIVATE);
         boolean isLoggedIn = sharedPref.getBoolean("is_logged_in", false);
 
         if (isLoggedIn) {
-            // User is already remembered, skip to Dashboard
-            Intent intent = new Intent(this, DashboardActivity.class);
+            Intent intent = new Intent(MainActivity.this, DashboardActivity.class);
             startActivity(intent);
             finish();
-            return;
         }
 
         // ef ekki logged in, fara annað
