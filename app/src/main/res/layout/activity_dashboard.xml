@@ -10,8 +10,8 @@
         android:id="@+id/textWelcome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="24sp"
-        android:text="Welcome!" />
+        android:text="Welcome!"
+        android:textSize="24sp" />
 
     <!-- US3: Account Number -->
     <TextView
@@ -22,7 +22,7 @@
         android:textSize="16sp"
         android:layout_marginTop="20dp" />
 
-    <!-- US3: Dót -->
+    <!-- US3: Balance -->
     <TextView
         android:id="@+id/textBalance"
         android:layout_width="wrap_content"
@@ -33,9 +33,17 @@
         android:layout_marginTop="8dp" />
 
     <Button
+        android:id="@+id/btnSendMoney"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send Money"
+        android:layout_marginTop="16dp" />
+
+    <Button
         android:id="@+id/btnLogout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Log Out"
-        android:layout_marginTop="30dp"/>
+        android:layout_marginTop="30dp" />
+
 </LinearLayout>
