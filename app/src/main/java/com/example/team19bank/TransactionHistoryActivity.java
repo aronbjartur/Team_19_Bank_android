@@ -56,7 +56,7 @@ public class TransactionHistoryActivity extends AppCompatActivity {
                 } else {
                     textEmpty.setVisibility(View.GONE);
                     recyclerView.setVisibility(View.VISIBLE);
-                    recyclerView.setAdapter(new TransactionAdapter(transactions));
+                    recyclerView.setAdapter(new TransactionAdapter(transactions, username));
                 }
             });
         });

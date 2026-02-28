@@ -17,10 +17,12 @@ import java.util.Locale;
 public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.ViewHolder> {
 
     private final List<Transaction> transactions;
+    private final String currentUser; // Núverandi notandi
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault());
 
-    public TransactionAdapter(List<Transaction> transactions) {
+    public TransactionAdapter(List<Transaction> transactions, String currentUser) {
         this.transactions = transactions;
+        this.currentUser = currentUser;
     }
 
     // Búa til nýja línu (inflate layout)
@@ -36,8 +38,18 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Transaction tx = transactions.get(position);
-        holder.textReceiver.setText("To: " + tx.receiver);
-        holder.textAmount.setText("-" + tx.amount + " ISK");
+
+        // Ákvarða stefnu millifærslu (sent eða móttekið)
+        boolean isSender = tx.sender.equals(currentUser);
+        if (isSender) {
+            holder.textReceiver.setText("To: " + tx.receiver);
+            holder.textAmount.setText("-" + tx.amount + " ISK");
+            holder.textAmount.setTextColor(0xFFD32F2F); // Rautt fyrir sent
+        } else {
+            holder.textReceiver.setText("From: " + tx.sender);
+            holder.textAmount.setText("+" + tx.amount + " ISK");
+            holder.textAmount.setTextColor(0xFF388E3C); // Grænt fyrir móttekið
+        }
         holder.textDate.setText(dateFormat.format(new Date(tx.timestamp)));
 
         // Sýna tilvísun ef hún er til

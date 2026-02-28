@@ -14,7 +14,7 @@ public interface TransactionDao {
     @Insert
     void insert(Transaction transaction);
 
-    // Sækja allar millifærslur fyrir notanda, nýjustu fyrst
-    @Query("SELECT * FROM transactions WHERE sender = :username ORDER BY timestamp DESC")
+    // Sækja allar millifærslur fyrir notanda (sent og móttekið), nýjustu fyrst
+    @Query("SELECT * FROM transactions WHERE sender = :username OR receiver = :username ORDER BY timestamp DESC")
     List<Transaction> getAllByUser(String username);
 }
