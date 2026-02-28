@@ -18,6 +18,7 @@ public class DashboardActivity extends AppCompatActivity {
     private TextView textBalance;
 
     private Button btnSendMoney;
+    private Button btnHistory;
     private Button btnLogout;
 
     @Override
@@ -31,6 +32,7 @@ public class DashboardActivity extends AppCompatActivity {
         textBalance = findViewById(R.id.textBalance);
 
         btnSendMoney = findViewById(R.id.btnSendMoney);
+        btnHistory = findViewById(R.id.btnHistory);
         btnLogout = findViewById(R.id.btnLogout);
 
         sharedPref = getSharedPreferences("BankAppPrefs", Context.MODE_PRIVATE);
@@ -38,6 +40,12 @@ public class DashboardActivity extends AppCompatActivity {
         // Send Money -> TransferActivity
         btnSendMoney.setOnClickListener(v -> {
             Intent intent = new Intent(DashboardActivity.this, TransferActivity.class);
+            startActivity(intent);
+        });
+
+        // US5: Transaction History
+        btnHistory.setOnClickListener(v -> {
+            Intent intent = new Intent(DashboardActivity.this, TransactionHistoryActivity.class);
             startActivity(intent);
         });
 

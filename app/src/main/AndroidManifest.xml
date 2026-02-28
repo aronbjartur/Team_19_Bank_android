@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Team19Bank">
         <activity
+            android:name=".TransactionHistoryActivity"
+            android:exported="false" />
+        <activity
             android:name=".SignupActivity"
             android:exported="false" />
         <activity

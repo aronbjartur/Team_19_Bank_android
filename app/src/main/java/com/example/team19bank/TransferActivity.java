@@ -78,6 +78,14 @@ public class TransferActivity extends AppCompatActivity {
                     .putLong("balance_isk", newBalance)
                     .apply();
 
+            // US5: Vista millifærslu í Room gagnagrunn (á bakgrunnsþræði)
+            String sender = sharedPref.getString("active_username", "Unknown");
+            String ref = safeText(etReference);
+            Transaction transaction = new Transaction(sender, receiver, amount, ref, System.currentTimeMillis());
+            java.util.concurrent.Executors.newSingleThreadExecutor().execute(() ->
+                    AppDatabase.getInstance(this).transactionDao().insert(transaction)
+            );
+
             Toast.makeText(this,
                     "Transfer submitted!\nTo: " + receiver + "\nAmount: " + amount + " ISK",
                     Toast.LENGTH_LONG).show();
