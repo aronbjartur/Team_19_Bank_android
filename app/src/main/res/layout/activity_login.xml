@@ -12,4 +12,14 @@
 
     <Button android:id="@+id/btnLogin" android:layout_width="match_parent"
         android:layout_height="wrap_content" android:text="Login" android:layout_marginTop="24dp"/>
+
+    <Button android:id="@+id/btnGoToSignup"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="Sign Up" android:layout_marginTop="16dp"/>
+
+    <Button android:id="@+id/btnHomeFromLogin"
+        style="?android:attr/borderlessButtonStyle"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="Heim / Loka" android:layout_marginTop="8dp"/>
 </LinearLayout>

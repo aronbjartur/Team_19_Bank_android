@@ -3,25 +3,50 @@ package com.example.team19bank;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-// US5: Room entity klasi - tafla í SQLite gagnagrunninum
-// Geymir upplýsingar um hverja millifærslu (sendandi, móttakandi, upphæð, tilvísun, tímasetning)
+import com.google.gson.annotations.SerializedName;
+
 @Entity(tableName = "transactions")
 public class Transaction {
 
     @PrimaryKey(autoGenerate = true)
-    public int id; // Sjálfvirkt auðkenni
+    @SerializedName("id")
+    private Long id;
 
-    public String sender;    // Notandanafn sendanda
-    public String receiver;  // Móttakandi (reikningur/nafn)
-    public long amount;      // Upphæð í ISK
-    public String reference; // Tilvísun (valfrjálst)
-    public long timestamp;   // Tímasetning í millisekúndum
+    @SerializedName("amount")
+    private double amount;
 
-    public Transaction(String sender, String receiver, long amount, String reference, long timestamp) {
-        this.sender = sender;
-        this.receiver = receiver;
-        this.amount = amount;
-        this.reference = reference;
-        this.timestamp = timestamp;
-    }
+    @SerializedName("sourceAccount")
+    private String sourceAccount;
+
+    @SerializedName("destinationAccount")
+    private String destinationAccount;
+
+    @SerializedName("status")
+    private String status;
+
+    @SerializedName("createdAt")
+    private String createdAt;
+
+    @SerializedName("memo")
+    private String memo;
+
+    public Transaction() {}
+
+    // GETTERS
+    public Long getId() { return id; }
+    public double getAmount() { return amount; }
+    public String getSourceAccount() { return sourceAccount; }
+    public String getDestinationAccount() { return destinationAccount; }
+    public String getStatus() { return status; }
+    public String getCreatedAt() { return createdAt; }
+    public String getMemo() { return memo; }
+
+    // SETTERS
+    public void setId(Long id) { this.id = id; }
+    public void setAmount(double amount) { this.amount = amount; }
+    public void setSourceAccount(String sourceAccount) { this.sourceAccount = sourceAccount; }
+    public void setDestinationAccount(String destinationAccount) { this.destinationAccount = destinationAccount; }
+    public void setStatus(String status) { this.status = status; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public void setMemo(String memo) { this.memo = memo; }
 }

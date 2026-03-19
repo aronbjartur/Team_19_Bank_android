@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Apply for Loan"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:paddingBottom="16dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Borrow from (Account Number):"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/etLoanSource"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="e.g. bank"
+            android:text="bank"
+            android:padding="12dp"
+            android:background="@android:drawable/edit_text"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Amount to borrow:"
+            android:layout_marginTop="16dp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/etLoanAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter amount"
+            android:inputType="number"
+            android:layout_marginTop="8dp" />
+
+        <EditText
+            android:id="@+id/etLoanMemo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Note / Memo (optional)"
+            android:layout_marginTop="16dp" />
+
+        <Button
+            android:id="@+id/btnSubmitLoan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Get Loan"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="#4CAF50" />
+
+        <Button
+            android:id="@+id/btnBackFromLoan"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Hætta við / Til baka"
+            android:textColor="#FF0000"
+            android:layout_marginTop="8dp" />
+
+    </LinearLayout>
+</ScrollView>

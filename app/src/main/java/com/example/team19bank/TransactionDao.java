@@ -2,6 +2,7 @@ package com.example.team19bank;
 
 import androidx.room.Dao;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 
 import java.util.List;
@@ -10,11 +11,18 @@ import java.util.List;
 @Dao
 public interface TransactionDao {
 
-    // Setja nýja millifærslu í gagnagrunn
-    @Insert
+    // OnConflictStrategy.REPLACE kemur í veg fyrir crash ef sama færsla kemur aftur
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(Transaction transaction);
 
-    // Sækja allar millifærslur fyrir notanda (sent og móttekið), nýjustu fyrst
-    @Query("SELECT * FROM transactions WHERE sender = :username OR receiver = :username ORDER BY timestamp DESC")
-    List<Transaction> getAllByUser(String username);
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertAll(List<Transaction> transactions);
+
+    // LAGAÐ: Notum núna sourceAccount og destinationAccount!
+    @Query("SELECT * FROM transactions WHERE sourceAccount = :accountNumber OR destinationAccount = :accountNumber ORDER BY id DESC")
+    List<Transaction> getAllByAccount(String accountNumber);
+
+    // Gott að hafa ef þú vilt hreinsa út gamlar færslur
+    @Query("DELETE FROM transactions")
+    void clearAll();
 }

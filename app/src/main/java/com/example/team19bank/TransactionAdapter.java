@@ -8,24 +8,18 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
-// US5: RecyclerView adapter - sýnir millifærslur í skrollanlegum lista
 public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.ViewHolder> {
 
     private final List<Transaction> transactions;
-    private final String currentUser; // Núverandi notandi
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault());
+    private final String myAccountNumber;
 
-    public TransactionAdapter(List<Transaction> transactions, String currentUser) {
+    public TransactionAdapter(List<Transaction> transactions, String myAccountNumber) {
         this.transactions = transactions;
-        this.currentUser = currentUser;
+        this.myAccountNumber = myAccountNumber;
     }
 
-    // Búa til nýja línu (inflate layout)
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -34,27 +28,30 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         return new ViewHolder(view);
     }
 
-    // Fylla í gögn fyrir hverja línu í listanum
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Transaction tx = transactions.get(position);
 
-        // Ákvarða stefnu millifærslu (sent eða móttekið)
-        boolean isSender = tx.sender.equals(currentUser);
-        if (isSender) {
-            holder.textReceiver.setText("To: " + tx.receiver);
-            holder.textAmount.setText("-" + tx.amount + " ISK");
-            holder.textAmount.setTextColor(0xFFD32F2F); // Rautt fyrir sent
-        } else {
-            holder.textReceiver.setText("From: " + tx.sender);
-            holder.textAmount.setText("+" + tx.amount + " ISK");
-            holder.textAmount.setTextColor(0xFF388E3C); // Grænt fyrir móttekið
-        }
-        holder.textDate.setText(dateFormat.format(new Date(tx.timestamp)));
+        boolean isSender =
+                tx.getSourceAccount() != null &&
+                        tx.getSourceAccount().equals(myAccountNumber);
 
-        // Sýna tilvísun ef hún er til
-        if (tx.reference != null && !tx.reference.isEmpty()) {
-            holder.textReference.setText("Ref: " + tx.reference);
+        if (isSender) {
+            holder.textReceiver.setText("To: " + tx.getDestinationAccount());
+            holder.textAmount.setText("-" + tx.getAmount() + " ISK");
+            holder.textAmount.setTextColor(0xFFD32F2F);
+        } else {
+            holder.textReceiver.setText("From: " + tx.getSourceAccount());
+            holder.textAmount.setText("+" + tx.getAmount() + " ISK");
+            holder.textAmount.setTextColor(0xFF388E3C);
+        }
+
+        holder.textDate.setText(
+                tx.getCreatedAt() != null ? tx.getCreatedAt() : "Date missing"
+        );
+
+        if (tx.getMemo() != null && !tx.getMemo().isEmpty()) {
+            holder.textReference.setText("Ref: " + tx.getMemo());
             holder.textReference.setVisibility(View.VISIBLE);
         } else {
             holder.textReference.setVisibility(View.GONE);
@@ -66,7 +63,6 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         return transactions.size();
     }
 
-    // ViewHolder - geymir tilvísanir í views fyrir hverja línu
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView textReceiver, textAmount, textDate, textReference;
 

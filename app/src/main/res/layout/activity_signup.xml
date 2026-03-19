@@ -56,4 +56,21 @@
         android:text="Nýskráning"
         android:layout_marginTop="32dp" />
 
+    <Button
+        android:id="@+id/btnBackToLogin"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Til baka í innskráningu"
+        android:layout_marginTop="16dp" />
+
+    <EditText
+        android:id="@+id/editCreditScore"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Lánshæfismat (t.d. 800)"
+        android:inputType="number"
+        android:layout_marginTop="16dp"
+        android:minHeight="48dp" />
+
 </LinearLayout>
