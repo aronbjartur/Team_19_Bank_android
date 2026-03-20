@@ -50,4 +50,6 @@ dependencies {
     // Room (local database for transaction history)
     implementation(libs.room.runtime)
     annotationProcessor(libs.room.compiler)
+    // Biometric authentication
+    implementation("androidx.biometric:biometric:1.1.0")
 }

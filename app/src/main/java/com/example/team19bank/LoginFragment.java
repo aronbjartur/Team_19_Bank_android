@@ -1,5 +1,8 @@
 package com.example.team19bank;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,7 +13,12 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.biometric.BiometricManager;
+import androidx.biometric.BiometricPrompt;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+
+import java.util.concurrent.Executor;
 
 public class LoginFragment extends Fragment {
 
@@ -18,6 +26,7 @@ public class LoginFragment extends Fragment {
     private EditText usernameEditText;
     private EditText passwordEditText;
     private Button loginButton;
+    private Button biometricButton;
     private Button signupLinkButton;
     private Button homeButton; // NÝTT: Breyta fyrir nýja Heim/Loka takkann
 
@@ -38,6 +47,7 @@ public class LoginFragment extends Fragment {
         usernameEditText = view.findViewById(R.id.loginUser);
         passwordEditText = view.findViewById(R.id.loginPass);
         loginButton = view.findViewById(R.id.btnLogin);
+        biometricButton = view.findViewById(R.id.btnBiometric);
         signupLinkButton = view.findViewById(R.id.btnGoToSignup);
         homeButton = view.findViewById(R.id.btnHomeFromLogin);
 
@@ -55,6 +65,99 @@ public class LoginFragment extends Fragment {
                 requireActivity().finish();
             });
         }
+
+        setupBiometricButton();
+    }
+
+    private void setupBiometricButton() {
+        // Show the fingerprint button only if the user has previously opted in.
+        // Uses a separate prefs file so it isn't wiped on logout/401.
+        SharedPreferences prefs = requireContext().getSharedPreferences("BiometricPrefs", Context.MODE_PRIVATE);
+        boolean biometricEnabled = prefs.getBoolean("biometric_enabled", false);
+
+        if (biometricEnabled) {
+            biometricButton.setVisibility(View.VISIBLE);
+            biometricButton.setOnClickListener(v -> showBiometricPrompt());
+        }
+    }
+
+    private boolean isBiometricAvailable() {
+        BiometricManager biometricManager = BiometricManager.from(requireContext());
+        return biometricManager.canAuthenticate(
+                BiometricManager.Authenticators.BIOMETRIC_STRONG) == BiometricManager.BIOMETRIC_SUCCESS;
+    }
+
+    private void promptEnableBiometric() {
+        if (!isBiometricAvailable()) {
+            // Device has no enrolled fingerprints — skip the prompt
+            navigateToHome();
+            return;
+        }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Enable Fingerprint Login")
+                .setMessage("Would you like to use your fingerprint to sign in next time?")
+                .setPositiveButton("Enable", (dialog, which) -> {
+                    // Save biometric flag alongside the current token and username
+                    // so they survive logout (which clears BankAppPrefs)
+                    SharedPreferences bankPrefs = requireContext().getSharedPreferences("BankAppPrefs", Context.MODE_PRIVATE);
+                    SharedPreferences bioPrefs = requireContext().getSharedPreferences("BiometricPrefs", Context.MODE_PRIVATE);
+                    bioPrefs.edit()
+                            .putBoolean("biometric_enabled", true)
+                            .putString("auth_token", bankPrefs.getString("auth_token", null))
+                            .putString("active_username", bankPrefs.getString("active_username", null))
+                            .apply();
+                    navigateToHome();
+                })
+                .setNegativeButton("Not now", (dialog, which) -> navigateToHome())
+                .show();
+    }
+
+    private void navigateToHome() {
+        Toast.makeText(getContext(), "Login Successful!", Toast.LENGTH_SHORT).show();
+        // Förum á HomeFragment
+        ((MainActivity) requireActivity()).replaceFragment(new HomeFragment(), false);
+    }
+
+    private void showBiometricPrompt() {
+        Executor executor = ContextCompat.getMainExecutor(requireContext());
+
+        BiometricPrompt biometricPrompt = new BiometricPrompt(this, executor,
+                new BiometricPrompt.AuthenticationCallback() {
+                    @Override
+                    public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
+                        super.onAuthenticationSucceeded(result);
+                        // Restore token and username from BiometricPrefs back into BankAppPrefs
+                        SharedPreferences bioPrefs = requireContext().getSharedPreferences("BiometricPrefs", Context.MODE_PRIVATE);
+                        SharedPreferences bankPrefs = requireContext().getSharedPreferences("BankAppPrefs", Context.MODE_PRIVATE);
+                        bankPrefs.edit()
+                                .putBoolean("is_logged_in", true)
+                                .putString("auth_token", bioPrefs.getString("auth_token", null))
+                                .putString("active_username", bioPrefs.getString("active_username", null))
+                                .apply();
+                        navigateToHome();
+                    }
+
+                    @Override
+                    public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
+                        super.onAuthenticationError(errorCode, errString);
+                        // Cancelled or hardware error — do nothing, user can still use password
+                    }
+
+                    @Override
+                    public void onAuthenticationFailed() {
+                        super.onAuthenticationFailed();
+                        Toast.makeText(getContext(), "Fingerprint not recognized", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Sign in to Team 19 Bank")
+                .setSubtitle("Use your fingerprint to sign in")
+                .setNegativeButtonText("Use password")
+                .build();
+
+        biometricPrompt.authenticate(promptInfo);
     }
 
     // Aðferð beint úr class diagram
@@ -66,9 +169,14 @@ public class LoginFragment extends Fragment {
             authService.login(user, pass, new AuthService.AuthCallback() {
                 @Override
                 public void onSuccess() {
-                    Toast.makeText(getContext(), "Login Successful!", Toast.LENGTH_SHORT).show();
-                    // Förum á HomeFragment
-                    ((MainActivity) requireActivity()).replaceFragment(new HomeFragment(), false);
+                    SharedPreferences prefs = requireContext().getSharedPreferences("BiometricPrefs", Context.MODE_PRIVATE);
+                    boolean alreadyEnabled = prefs.getBoolean("biometric_enabled", false);
+                    if (alreadyEnabled) {
+                        navigateToHome();
+                    } else {
+                        // First login — ask if they want to enable fingerprint
+                        promptEnableBiometric();
+                    }
                 }
 
                 @Override

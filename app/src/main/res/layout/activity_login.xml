@@ -13,6 +13,13 @@
     <Button android:id="@+id/btnLogin" android:layout_width="match_parent"
         android:layout_height="wrap_content" android:text="Login" android:layout_marginTop="24dp"/>
 
+    <Button android:id="@+id/btnBiometric"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="Sign in with Fingerprint"
+        android:layout_marginTop="12dp"
+        android:visibility="gone"/>
+
     <Button android:id="@+id/btnGoToSignup"
         style="?attr/materialButtonOutlinedStyle"
         android:layout_width="match_parent" android:layout_height="wrap_content"
