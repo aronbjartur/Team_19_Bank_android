@@ -13,7 +13,6 @@
         android:text="Welcome!"
         android:textSize="24sp" />
 
-    <!-- US3: Account Number -->
     <TextView
         android:id="@+id/textAccountNumber"
         android:layout_width="wrap_content"
@@ -22,7 +21,6 @@
         android:textSize="16sp"
         android:layout_marginTop="20dp" />
 
-    <!-- US3: Balance -->
     <TextView
         android:id="@+id/textBalance"
         android:layout_width="wrap_content"
@@ -31,6 +29,13 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_marginTop="8dp" />
+
+    <Button
+        android:id="@+id/btnTogglePrivacy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hide Info"
+        android:layout_marginTop="12dp" />
 
     <Button
         android:id="@+id/btnSendMoney"

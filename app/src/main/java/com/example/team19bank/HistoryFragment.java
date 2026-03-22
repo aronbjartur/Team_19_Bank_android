@@ -35,7 +35,13 @@ public class HistoryFragment extends Fragment {
     private RecyclerView recyclerView;
     private TextView textEmpty;
     private Button btnBack;
+    private Button btnTogglePrivacyHistory;
     private BankApi api;
+    private SharedPreferences sharedPref;
+
+    private boolean isPrivacyModeOn = false;
+    private List<Transaction> currentTransactions = new ArrayList<>();
+    private String myAccountNumber = "";
 
     @Nullable
     @Override
@@ -50,18 +56,37 @@ public class HistoryFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recyclerTransactions);
         textEmpty = view.findViewById(R.id.textEmpty);
         btnBack = view.findViewById(R.id.btnBackHistory);
+        btnTogglePrivacyHistory = view.findViewById(R.id.btnTogglePrivacyHistory);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         api = NetworkService.getApi(requireContext());
+        sharedPref = requireActivity().getSharedPreferences("BankAppPrefs", Context.MODE_PRIVATE);
+
+        isPrivacyModeOn = sharedPref.getBoolean("privacy_mode", false);
+        myAccountNumber = sharedPref.getString("account_number", "");
+        updatePrivacyButtonText();
+
+        btnTogglePrivacyHistory.setOnClickListener(v -> {
+            isPrivacyModeOn = !isPrivacyModeOn;
+            sharedPref.edit().putBoolean("privacy_mode", isPrivacyModeOn).apply();
+            updatePrivacyButtonText();
+            refreshTransactionList();
+        });
 
         btnBack.setOnClickListener(v -> {
             ((MainActivity) requireActivity()).replaceFragment(new HomeFragment(), false);
         });
 
-        SharedPreferences sp = requireActivity().getSharedPreferences("BankAppPrefs", Context.MODE_PRIVATE);
-        String currentUser = sp.getString("active_username", "");
-
+        String currentUser = sharedPref.getString("active_username", "");
         loadTransactionsForUsername(currentUser);
+    }
+
+    private void updatePrivacyButtonText() {
+        btnTogglePrivacyHistory.setText(isPrivacyModeOn ? "Show Info" : "Hide Info");
+    }
+
+    private void refreshTransactionList() {
+        recyclerView.setAdapter(new TransactionAdapter(currentTransactions, myAccountNumber, isPrivacyModeOn));
     }
 
     private void loadTransactionsForUsername(String username) {
@@ -142,21 +167,17 @@ public class HistoryFragment extends Fragment {
                         String rawJson = response.body().string();
                         Log.d("HISTORY_DEBUG", "transactions rawJson = " + rawJson);
 
-                        List<Transaction> transactions = parseTransactions(rawJson);
-                        Log.d("HISTORY_DEBUG", "transactions.size = " + transactions.size());
+                        currentTransactions = parseTransactions(rawJson);
+                        Log.d("HISTORY_DEBUG", "transactions.size = " + currentTransactions.size());
 
-                        if (transactions.isEmpty()) {
+                        if (currentTransactions.isEmpty()) {
                             textEmpty.setVisibility(View.VISIBLE);
                             recyclerView.setVisibility(View.GONE);
                             textEmpty.setText("No transactions found.");
                         } else {
                             textEmpty.setVisibility(View.GONE);
                             recyclerView.setVisibility(View.VISIBLE);
-
-                            SharedPreferences sp = requireActivity().getSharedPreferences("BankAppPrefs", Context.MODE_PRIVATE);
-                            String myAccountNumber = sp.getString("account_number", "");
-
-                            recyclerView.setAdapter(new TransactionAdapter(transactions, myAccountNumber));
+                            refreshTransactionList();
                         }
                     } catch (Exception e) {
                         Log.e("HISTORY_DEBUG", "transactions parse failed", e);

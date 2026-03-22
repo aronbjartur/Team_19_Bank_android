@@ -13,6 +13,13 @@
         android:textStyle="bold"
         android:paddingBottom="12dp" />
 
+    <Button
+        android:id="@+id/btnTogglePrivacyHistory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hide Info"
+        android:layout_marginBottom="12dp" />
+
     <TextView
         android:id="@+id/textEmpty"
         android:layout_width="match_parent"

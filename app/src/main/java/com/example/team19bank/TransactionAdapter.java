@@ -14,10 +14,12 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
 
     private final List<Transaction> transactions;
     private final String myAccountNumber;
+    private final boolean privacyModeOn;
 
-    public TransactionAdapter(List<Transaction> transactions, String myAccountNumber) {
+    public TransactionAdapter(List<Transaction> transactions, String myAccountNumber, boolean privacyModeOn) {
         this.transactions = transactions;
         this.myAccountNumber = myAccountNumber;
+        this.privacyModeOn = privacyModeOn;
     }
 
     @NonNull
@@ -35,6 +37,29 @@ public class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.
         boolean isSender =
                 tx.getSourceAccount() != null &&
                         tx.getSourceAccount().equals(myAccountNumber);
+
+        if (privacyModeOn) {
+            if (isSender) {
+                holder.textReceiver.setText("To: ****");
+            } else {
+                holder.textReceiver.setText("From: ****");
+            }
+
+            holder.textAmount.setText("******");
+
+            holder.textDate.setText(
+                    tx.getCreatedAt() != null ? tx.getCreatedAt() : "Date missing"
+            );
+
+            if (tx.getMemo() != null && !tx.getMemo().isEmpty()) {
+                holder.textReference.setText("Ref: ******");
+                holder.textReference.setVisibility(View.VISIBLE);
+            } else {
+                holder.textReference.setVisibility(View.GONE);
+            }
+
+            return;
+        }
 
         if (isSender) {
             holder.textReceiver.setText("To: " + tx.getDestinationAccount());

@@ -34,8 +34,13 @@ public class HomeFragment extends Fragment {
     private Button loanButton;
     private Button btnHistory;
     private Button logoutButton;
+    private Button btnTogglePrivacy;
 
     private AccountService accountService;
+
+    private boolean isPrivacyModeOn = false;
+    private String realAccountNumber = "—";
+    private String realBalance = "—";
 
     @Nullable
     @Override
@@ -47,7 +52,6 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Bindum Views
         textWelcome = view.findViewById(R.id.textWelcome);
         textAccountNumber = view.findViewById(R.id.textAccountNumber);
         textBalance = view.findViewById(R.id.textBalance);
@@ -56,19 +60,19 @@ public class HomeFragment extends Fragment {
         loanButton = view.findViewById(R.id.btnGoToLoan);
         btnHistory = view.findViewById(R.id.btnHistory);
         logoutButton = view.findViewById(R.id.btnLogout);
+        btnTogglePrivacy = view.findViewById(R.id.btnTogglePrivacy);
 
         sharedPref = requireActivity().getSharedPreferences("BankAppPrefs", Context.MODE_PRIVATE);
         accountService = new AccountService(requireContext());
 
-        // Setjum nafn notanda
         String user = sharedPref.getString("active_username", "User");
         textWelcome.setText("Welcome back, " + user + "!");
 
-        // Byrjum með takka óvirka þar til gögn hlaðast
+        isPrivacyModeOn = sharedPref.getBoolean("privacy_mode", false);
+
         transferButton.setEnabled(false);
         loanButton.setEnabled(false);
 
-        // Click listeners
         transferButton.setOnClickListener(v -> {
             ((MainActivity) requireActivity()).replaceFragment(new TransferFragment(), true);
         });
@@ -83,13 +87,18 @@ public class HomeFragment extends Fragment {
 
         logoutButton.setOnClickListener(v -> onLogoutClicked());
 
-        // Sækjum gögn
+        btnTogglePrivacy.setOnClickListener(v -> {
+            isPrivacyModeOn = !isPrivacyModeOn;
+            sharedPref.edit().putBoolean("privacy_mode", isPrivacyModeOn).apply();
+            updatePrivacyUI();
+        });
+
+        updatePrivacyUI();
         loadAccounts();
     }
 
     private void loadAccounts() {
         String username = sharedPref.getString("active_username", "");
-
 
         android.util.Log.d("DEBUG_USER", "HOME loading for user = [" + username + "]");
 
@@ -98,12 +107,14 @@ public class HomeFragment extends Fragment {
             public void onSuccess(Account account) {
                 if (!isAdded() || getActivity() == null) return;
 
-                textAccountNumber.setText("Account: " + account.getAccountNumber());
-                textBalance.setText("Balance: " + account.getBalance() + " ISK");
+                realAccountNumber = account.getAccountNumber();
+                realBalance = account.getBalance() + " ISK";
 
                 sharedPref.edit()
                         .putString("account_number", account.getAccountNumber())
                         .apply();
+
+                updatePrivacyUI();
 
                 transferButton.setEnabled(true);
                 loanButton.setEnabled(true);
@@ -117,8 +128,19 @@ public class HomeFragment extends Fragment {
         });
     }
 
+    private void updatePrivacyUI() {
+        if (isPrivacyModeOn) {
+            textAccountNumber.setText("Account: **** **** ****");
+            textBalance.setText("Balance: ******");
+            btnTogglePrivacy.setText("Show Info");
+        } else {
+            textAccountNumber.setText("Account: " + realAccountNumber);
+            textBalance.setText("Balance: " + realBalance);
+            btnTogglePrivacy.setText("Hide Info");
+        }
+    }
+
     private void onLogoutClicked() {
-        // Notum requireContext() varlega hér
         BankApi api = NetworkService.getApi(requireContext());
         api.logout().enqueue(new Callback<Map<String, String>>() {
             @Override
@@ -134,16 +156,12 @@ public class HomeFragment extends Fragment {
     }
 
     private void clearLocalDataAndGoToLogin() {
-        // Öryggistékk: Ef við erum þegar búin að eyða fragmentinu, gerum ekkert
         if (!isAdded() || getActivity() == null) return;
 
-        // Hreinsum gögnin af símanum
         SharedPreferences sharedPrefs = getActivity().getSharedPreferences("BankAppPrefs", Context.MODE_PRIVATE);
         sharedPrefs.edit().clear().apply();
 
         Toast.makeText(getContext(), "Logged out", Toast.LENGTH_SHORT).show();
-
-        // Förum yfir á Login skjáinn í gegnum MainActivity
         ((MainActivity) getActivity()).replaceFragment(new LoginFragment(), false);
     }
 }
