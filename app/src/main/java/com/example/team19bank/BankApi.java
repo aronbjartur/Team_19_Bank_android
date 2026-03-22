@@ -38,4 +38,6 @@ public interface BankApi {
 
     @GET("users/{id}/transactions")
     Call<ResponseBody> getUserTransactions(@Path("id") Long id);
+
+
 }
