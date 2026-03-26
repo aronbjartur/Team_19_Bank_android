@@ -172,6 +172,12 @@ public class LoginFragment extends Fragment {
                     SharedPreferences prefs = requireContext().getSharedPreferences("BiometricPrefs", Context.MODE_PRIVATE);
                     boolean alreadyEnabled = prefs.getBoolean("biometric_enabled", false);
                     if (alreadyEnabled) {
+                        // Keep the stored biometric token in sync with the latest login
+                        SharedPreferences bankPrefs = requireContext().getSharedPreferences("BankAppPrefs", Context.MODE_PRIVATE);
+                        prefs.edit()
+                                .putString("auth_token", bankPrefs.getString("auth_token", null))
+                                .putString("active_username", bankPrefs.getString("active_username", null))
+                                .apply();
                         navigateToHome();
                     } else {
                         // First login — ask if they want to enable fingerprint
