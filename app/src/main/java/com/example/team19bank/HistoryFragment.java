@@ -3,11 +3,17 @@ package com.example.team19bank;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,7 +27,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,12 +44,16 @@ public class HistoryFragment extends Fragment {
     private TextView textEmpty;
     private Button btnBack;
     private Button btnTogglePrivacyHistory;
+    private EditText editSearch;
+    private Spinner spinnerSort;
     private BankApi api;
     private SharedPreferences sharedPref;
 
     private boolean isPrivacyModeOn = false;
     private List<Transaction> currentTransactions = new ArrayList<>();
     private String myAccountNumber = "";
+    private String currentQuery = "";
+    private int currentSortIndex = 0;
 
     @Nullable
     @Override
@@ -57,6 +69,8 @@ public class HistoryFragment extends Fragment {
         textEmpty = view.findViewById(R.id.textEmpty);
         btnBack = view.findViewById(R.id.btnBackHistory);
         btnTogglePrivacyHistory = view.findViewById(R.id.btnTogglePrivacyHistory);
+        editSearch = view.findViewById(R.id.editSearch);
+        spinnerSort = view.findViewById(R.id.spinnerSort);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         api = NetworkService.getApi(requireContext());
@@ -65,6 +79,18 @@ public class HistoryFragment extends Fragment {
         isPrivacyModeOn = sharedPref.getBoolean("privacy_mode", false);
         myAccountNumber = sharedPref.getString("account_number", "");
         updatePrivacyButtonText();
+
+        setupSortSpinner();
+
+        editSearch.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+            @Override
+            public void afterTextChanged(Editable s) {
+                currentQuery = s.toString().trim();
+                refreshTransactionList();
+            }
+        });
 
         btnTogglePrivacyHistory.setOnClickListener(v -> {
             isPrivacyModeOn = !isPrivacyModeOn;
@@ -85,8 +111,71 @@ public class HistoryFragment extends Fragment {
         btnTogglePrivacyHistory.setText(isPrivacyModeOn ? "Show Info" : "Hide Info");
     }
 
+    private void setupSortSpinner() {
+        String[] options = {"Date: Newest First", "Date: Oldest First", "Amount: High to Low", "Amount: Low to High"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, options);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerSort.setAdapter(adapter);
+        spinnerSort.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                currentSortIndex = position;
+                refreshTransactionList();
+            }
+            @Override public void onNothingSelected(AdapterView<?> parent) {}
+        });
+    }
+
     private void refreshTransactionList() {
-        recyclerView.setAdapter(new TransactionAdapter(currentTransactions, myAccountNumber, isPrivacyModeOn));
+        List<Transaction> filtered = new ArrayList<>();
+        String query = currentQuery.toLowerCase(Locale.ROOT);
+
+        for (Transaction tx : currentTransactions) {
+            if (query.isEmpty() || matchesQuery(tx, query)) {
+                filtered.add(tx);
+            }
+        }
+
+        switch (currentSortIndex) {
+            case 0: // Newest first
+                Collections.sort(filtered, (a, b) -> compareCreatedAt(b, a));
+                break;
+            case 1: // Oldest first
+                Collections.sort(filtered, (a, b) -> compareCreatedAt(a, b));
+                break;
+            case 2: // Amount high to low
+                Collections.sort(filtered, (a, b) -> Double.compare(b.getAmount(), a.getAmount()));
+                break;
+            case 3: // Amount low to high
+                Collections.sort(filtered, (a, b) -> Double.compare(a.getAmount(), b.getAmount()));
+                break;
+        }
+
+        if (filtered.isEmpty()) {
+            textEmpty.setVisibility(View.VISIBLE);
+            textEmpty.setText(currentQuery.isEmpty() ? "No transactions found." : "No transactions match your search.");
+            recyclerView.setVisibility(View.GONE);
+        } else {
+            textEmpty.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+            recyclerView.setAdapter(new TransactionAdapter(filtered, myAccountNumber, isPrivacyModeOn));
+        }
+    }
+
+    private boolean matchesQuery(Transaction tx, String query) {
+        if (tx.getMemo() != null && tx.getMemo().toLowerCase(Locale.ROOT).contains(query)) return true;
+        if (tx.getSourceAccount() != null && tx.getSourceAccount().toLowerCase(Locale.ROOT).contains(query)) return true;
+        if (tx.getDestinationAccount() != null && tx.getDestinationAccount().toLowerCase(Locale.ROOT).contains(query)) return true;
+        if (tx.getStatus() != null && tx.getStatus().toLowerCase(Locale.ROOT).contains(query)) return true;
+        if (tx.getCreatedAt() != null && tx.getCreatedAt().toLowerCase(Locale.ROOT).contains(query)) return true;
+        if (String.valueOf(tx.getAmount()).contains(query)) return true;
+        return false;
+    }
+
+    private int compareCreatedAt(Transaction a, Transaction b) {
+        String dateA = a.getCreatedAt() != null ? a.getCreatedAt() : "";
+        String dateB = b.getCreatedAt() != null ? b.getCreatedAt() : "";
+        return dateA.compareTo(dateB);
     }
 
     private void loadTransactionsForUsername(String username) {
