@@ -32,6 +32,8 @@ public class HomeFragment extends Fragment {
 
     private Button transferButton;
     private Button loanButton;
+    private Button btnMyLoans;
+    private Button btnPendingApprovals;
     private Button btnHistory;
     private Button logoutButton;
     private Button btnTogglePrivacy;
@@ -58,6 +60,8 @@ public class HomeFragment extends Fragment {
 
         transferButton = view.findViewById(R.id.btnSendMoney);
         loanButton = view.findViewById(R.id.btnGoToLoan);
+        btnMyLoans = view.findViewById(R.id.btnMyLoans);
+        btnPendingApprovals = view.findViewById(R.id.btnPendingApprovals);
         btnHistory = view.findViewById(R.id.btnHistory);
         logoutButton = view.findViewById(R.id.btnLogout);
         btnTogglePrivacy = view.findViewById(R.id.btnTogglePrivacy);
@@ -72,18 +76,28 @@ public class HomeFragment extends Fragment {
 
         transferButton.setEnabled(false);
         loanButton.setEnabled(false);
+        btnMyLoans.setEnabled(false);
+        btnPendingApprovals.setEnabled(false);
 
-        transferButton.setOnClickListener(v -> {
-            ((MainActivity) requireActivity()).replaceFragment(new TransferFragment(), true);
-        });
+        transferButton.setOnClickListener(v ->
+                ((MainActivity) requireActivity()).replaceFragment(new TransferFragment(), true)
+        );
 
-        loanButton.setOnClickListener(v -> {
-            ((MainActivity) requireActivity()).replaceFragment(new LoanFragment(), true);
-        });
+        loanButton.setOnClickListener(v ->
+                ((MainActivity) requireActivity()).replaceFragment(new LoanFragment(), true)
+        );
 
-        btnHistory.setOnClickListener(v -> {
-            ((MainActivity) requireActivity()).replaceFragment(new HistoryFragment(), true);
-        });
+        btnMyLoans.setOnClickListener(v ->
+                ((MainActivity) requireActivity()).replaceFragment(new MyLoansFragment(), true)
+        );
+
+        btnPendingApprovals.setOnClickListener(v ->
+                ((MainActivity) requireActivity()).replaceFragment(new PendingApprovalsFragment(), true)
+        );
+
+        btnHistory.setOnClickListener(v ->
+                ((MainActivity) requireActivity()).replaceFragment(new HistoryFragment(), true)
+        );
 
         logoutButton.setOnClickListener(v -> onLogoutClicked());
 
@@ -118,6 +132,8 @@ public class HomeFragment extends Fragment {
 
                 transferButton.setEnabled(true);
                 loanButton.setEnabled(true);
+                btnMyLoans.setEnabled(true);
+                btnPendingApprovals.setEnabled(true);
             }
 
             @Override

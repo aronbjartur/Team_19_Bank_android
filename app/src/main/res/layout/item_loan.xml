@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:layout_marginBottom="8dp"
+    android:background="@android:drawable/dialog_holo_light_frame">
+
+    <TextView
+        android:id="@+id/textLoanAmount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Amount:" />
+
+    <TextView
+        android:id="@+id/textLoanRemaining"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Remaining:" />
+
+    <TextView
+        android:id="@+id/textLoanLender"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Lender:" />
+
+    <TextView
+        android:id="@+id/textLoanBorrower"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Borrower:" />
+
+    <TextView
+        android:id="@+id/textLoanStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Status:" />
+
+    <TextView
+        android:id="@+id/textLoanMemo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Memo:" />
+
+    <TextView
+        android:id="@+id/textLoanDueDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Due:" />
+
+    <EditText
+        android:id="@+id/etLoanPayAmount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Payment amount"
+        android:inputType="numberDecimal"
+        android:visibility="gone"
+        android:layout_marginTop="8dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <Button
+            android:id="@+id/btnApproveLoan"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Approve"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btnRejectLoan"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Reject"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btnPayLoan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Pay"
+            android:visibility="gone" />
+    </LinearLayout>
+
+</LinearLayout>

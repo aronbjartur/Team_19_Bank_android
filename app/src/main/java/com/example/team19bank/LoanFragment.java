@@ -20,9 +20,11 @@ import com.example.team19bank.model.LoanRequest;
 public class LoanFragment extends Fragment {
 
     private EditText sourceAccountEt, amountEt, memoEt;
-    private Button submitBtn, cancelBtn; // Bætti við cancelBtn
+    private Button btnBankMode, btnUserMode, submitBtn, cancelBtn;
     private LoanService loanService;
     private SharedPreferences sharedPref;
+
+    private boolean isBankMode = true;
 
     @Nullable
     @Override
@@ -37,22 +39,27 @@ public class LoanFragment extends Fragment {
         sourceAccountEt = view.findViewById(R.id.etLoanSource);
         amountEt = view.findViewById(R.id.etLoanAmount);
         memoEt = view.findViewById(R.id.etLoanMemo);
+        btnBankMode = view.findViewById(R.id.btnLoanModeBank);
+        btnUserMode = view.findViewById(R.id.btnLoanModeUser);
         submitBtn = view.findViewById(R.id.btnSubmitLoan);
         cancelBtn = view.findViewById(R.id.btnBackFromLoan);
 
         loanService = new LoanService(requireContext());
         sharedPref = requireActivity().getSharedPreferences("BankAppPrefs", Context.MODE_PRIVATE);
 
-        sourceAccountEt.setText("bank");
+        setMode(true);
+
+        btnBankMode.setOnClickListener(v -> setMode(true));
+        btnUserMode.setOnClickListener(v -> setMode(false));
 
         if (cancelBtn != null) {
-            cancelBtn.setOnClickListener(v -> {
-                // Fer aftur á HomeFragment
-                ((MainActivity) requireActivity()).replaceFragment(new HomeFragment(), false);
-            });
+            cancelBtn.setOnClickListener(v ->
+                    ((MainActivity) requireActivity()).replaceFragment(new HomeFragment(), false)
+            );
         }
 
         submitBtn.setOnClickListener(v -> {
+            String lenderAccount = sourceAccountEt.getText().toString().trim();
             String amountStr = amountEt.getText().toString().trim();
             String memoStr = memoEt.getText().toString().trim();
 
@@ -65,6 +72,11 @@ public class LoanFragment extends Fragment {
                 return;
             }
 
+            if (!isBankMode && lenderAccount.isEmpty()) {
+                sourceAccountEt.setError("Reikningsnúmer lánveitanda vantar");
+                return;
+            }
+
             if (myAccountNumber.isEmpty()) {
                 Toast.makeText(getContext(), "Reikningsnúmer fannst ekki! Farðu til baka á Home.", Toast.LENGTH_LONG).show();
                 return;
@@ -74,21 +86,26 @@ public class LoanFragment extends Fragment {
                 double amount = Double.parseDouble(amountStr);
 
                 LoanRequest req = new LoanRequest();
-                req.setLoanGiverAccount("bank");
+                req.setLoanGiverAccount(isBankMode ? "bank" : lenderAccount);
                 req.setLoanReceiverAccount(myAccountNumber);
                 req.setAmount(amount);
                 req.setMemo(memoStr);
 
-                loanService.applyForLoan(req, new LoanService.LoanCallback() {
+                loanService.applyForLoan(req, new LoanService.LoanActionCallback() {
                     @Override
-                    public void onSuccess() {
-                        Toast.makeText(getContext(), "Lán samþykkt!", Toast.LENGTH_SHORT).show();
+                    public void onSuccess(String message, com.example.team19bank.model.Loan loan) {
+                        String lowered = message.toLowerCase();
+                        if (lowered.contains("waiting") || lowered.contains("approval")) {
+                            Toast.makeText(getContext(), "Request sent, waiting for lender approval", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(getContext(), "Loan created successfully", Toast.LENGTH_SHORT).show();
+                        }
                         ((MainActivity) requireActivity()).replaceFragment(new SuccessFragment(), false);
                     }
 
                     @Override
                     public void onError(String errorMsg) {
-                        Toast.makeText(getContext(), "Bankinn segir: " + errorMsg, Toast.LENGTH_LONG).show();
+                        Toast.makeText(getContext(), "Loan error: " + errorMsg, Toast.LENGTH_LONG).show();
                     }
                 });
 
@@ -96,5 +113,23 @@ public class LoanFragment extends Fragment {
                 amountEt.setError("Ógild upphæð");
             }
         });
+    }
+
+    private void setMode(boolean bankMode) {
+        isBankMode = bankMode;
+
+        if (isBankMode) {
+            sourceAccountEt.setText("bank");
+            sourceAccountEt.setEnabled(false);
+            sourceAccountEt.setFocusable(false);
+            sourceAccountEt.setHint("bank");
+            submitBtn.setText("Get Loan");
+        } else {
+            sourceAccountEt.setText("");
+            sourceAccountEt.setEnabled(true);
+            sourceAccountEt.setFocusableInTouchMode(true);
+            sourceAccountEt.setHint("Enter lender account number");
+            submitBtn.setText("Send Request");
+        }
     }
 }
